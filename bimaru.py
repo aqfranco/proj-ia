@@ -115,12 +115,38 @@ class Bimaru(Problem):
         pass
 
     def goal_test(self, state: BimaruState):
+        size1 = 0
+        size2 = 0
+        size3 = 0 
+        size4 = 0
         for i in range(10):
             n = 0
             for j in range(10):
                 if(state.board.board[i][j] != '' and state.board.board[i][j] != '.' and state.board.board[i][j] != 'W'):
-                    if not self.check_valid_positions(i, j):
+                    size = self.check_valid_positions(i, j)
+                    print(size)
+                    if size == -1:
                         return False
+                    if size == 1:
+                        if size1 == 4:
+                            return False
+                        if size1 < 4:
+                            size1 = size1 + 1
+                    if size == 2:
+                        if size2 == 3:
+                            return False
+                        if size2 < 3:
+                            size2 = size2 + 1
+                    if size == 3:
+                        if size3 == 2:
+                            return False
+                        if size3 < 2:
+                            size3 = size3 + 1
+                    if size == 4:
+                        if size4 == 1:
+                            return False
+                        if size4 < 1:
+                            size4 = size4 + 1
                     n = n + 1
             if n != state.board.row[i]:
                 return False
@@ -144,34 +170,45 @@ class Bimaru(Problem):
         piece = self.board.board[i][j]
         if piece == 'C':
             if self.board.adjacent_positions_empty(i, j) != 0:
-                return False
+                return -1
+            return 1
         if piece == 'M':
             if self.board.adjacent_positions_empty(i, j) != 2:
-                return False
+                return -1
             HBorders = self.board.adjacent_horizontal_values(i+1, j+1)
             VBorders = self.board.adjacent_vertical_values(i+1, j+1)
             if VBorders != '(T, B)' and VBorders != '(T, M)' and VBorders != '(M, B)' and HBorders != '(L, M)' and HBorders != '(L, R)' and HBorders != '(M, R)':
-                return False
+                return -1
         if piece != 'C' and piece != 'M':
             if self.board.adjacent_positions_empty(i, j) != 1:
-                return False
+                return -1
             if piece == 'L':
                 RBorder = self.board.board[i][j+1]
                 if RBorder != 'R' and RBorder != 'M':
-                    return False
+                    return -1
             if piece == 'R':
                 LBorder = self.board.board[i][j-1]
                 if LBorder != 'L' and LBorder != 'M':
-                    return False
+                    return -1
+                for n in range(1, 5):
+                    if j - n < 0:
+                        return n
+                    if self.board.board[i][j-n] == '' or self.board.board[i][j-n] == '.' or self.board.board[i][j-n] == 'W':
+                        return n
             if piece == 'T':
                 BBorder = self.board.board[i+1][j]
                 if BBorder != 'M' and BBorder != 'B':
-                    return False
+                    return -1
             if piece == 'B':
                 TBorder = self.board.board[i-1][j] 
                 if TBorder != 'T' and TBorder != 'M':
-                    return False
-        return True
+                    return -1
+                for n in range(1, 5):
+                    if i - n < 0:
+                        return n
+                    if self.board.board[i-n][j] == '' or self.board.board[i-n][j] == '.' or self.board.board[i-n][j] == 'W':
+                        return n
+        return 0
     
     # TODO: outros metodos da classe
 
@@ -185,7 +222,7 @@ if __name__ == "__main__":
     # Imprimir para o standard output no formato indicado.
     bimaru = Bimaru(board)
     bimaru_state = BimaruState(board)
-    
+    bimaru_state.board.print()
     print(bimaru.goal_test(bimaru_state))
 
     pass
