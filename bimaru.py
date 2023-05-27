@@ -45,16 +45,16 @@ class Board:
 
     def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
         if row == 1:
-            return "(" + self.board[row][col-1] + ")"
+            return "(, " + self.board[row][col-1] + ")"
         if row == 10:
-            return "(" + self.board[row-2][col-1] + ")"
+            return "(" + self.board[row-2][col-1] + ", )"
         return "(" + self.board[row-2][col-1] + ", " + self.board[row][col-1] + ")"
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         if col == 1:
-            return "(" + self.board[row-1][col] + ")"
+            return "(, " + self.board[row-1][col] + ")"
         if col == 10:
-            return "(" + self.board[row-1][col-2] + ")"
+            return "(" + self.board[row-1][col-2] + ", )"
         return "(" + self.board[row-1][col-2] + ", " + self.board[row-1][col] + ")"
 
     @staticmethod
@@ -69,6 +69,8 @@ class Board:
         while x < hints:
             hint = stdin.readline().split()
             board_array[int(hint[1])][int(hint[2])] = hint[3]
+            row[int(hint[1])] = row[int(hint[1])] - 1
+            column[int(hint[2])] = column[int(hint[2])] - 1
             x = x + 1
         board = Board(board_array, row, column)
         return board
@@ -76,8 +78,12 @@ class Board:
     def adjacent_positions_empty(self, row: int, col: int) -> int:
         n = 0
         for i in range(row - 1, row + 2, 1):
+            if i < 0:
+                continue
+            if i > 9:
+                return n
             for j in range(col - 1, col + 2, 1):
-                if i < 0 or i > 9 or j < 0 or j > 9 or (i == row and j == col):
+                if j < 0 or j > 9 or (i == row and j == col):
                     continue
                 if self.board[i][j] != '' and self.board[i][j] != '.' and self.board[i][j] != 'W':
                     n = n + 1
@@ -111,8 +117,12 @@ class Bimaru(Problem):
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
+        fill_full_rows(state)
         # TODO
         pass
+
+    def fill_full_rows(self, state: BimaruState):
+        return 0
 
     def goal_test(self, state: BimaruState):
         size1 = 0
@@ -120,11 +130,11 @@ class Bimaru(Problem):
         size3 = 0 
         size4 = 0
         for i in range(10):
-            n = 0
+            if self.board.row[i] != 0 or self.board.column[i] != 0:
+                return False
             for j in range(10):
                 if(state.board.board[i][j] != '' and state.board.board[i][j] != '.' and state.board.board[i][j] != 'W'):
                     size = self.check_valid_positions(i, j)
-                    print(size)
                     if size == -1:
                         return False
                     if size == 1:
@@ -147,16 +157,6 @@ class Bimaru(Problem):
                             return False
                         if size4 < 1:
                             size4 = size4 + 1
-                    n = n + 1
-            if n != state.board.row[i]:
-                return False
-        for j in range(10):
-            n = 0
-            for i in range(10):
-                if(state.board.board[i][j] != '' and state.board.board[i][j] != '.' and state.board.board[i][j] != 'W'):
-                    n = n + 1
-            if n != state.board.column[j]:
-                return False
         return True
 
     def h(self, node: Node):
