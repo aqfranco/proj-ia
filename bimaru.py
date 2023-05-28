@@ -304,6 +304,6 @@ if __name__ == "__main__":
     # Imprimir para o standard output no formato indicado.
     bimaru = Bimaru(board)
     bimaru_state = BimaruState(board)
-    b1 = bimaru.result(bimaru_state, ((0, 0), (2, 0), 3))
+    #b1 = bimaru.result(bimaru_state, ((0, 0), (2, 0), 3))
     #print(bimaru.goal_test(bimaru_state))
     pass
