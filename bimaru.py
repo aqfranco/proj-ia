@@ -129,7 +129,6 @@ class Board:
                 for j in range(10):
                     if self.board[j][i] == '':
                         self.board[j][i] = '.'
-        return 0
 
     def print(self):
         for i in range(10):
@@ -155,45 +154,55 @@ class Bimaru(Problem):
         pass
 
     def result(self, state: BimaruState, action):
+        new_board_array = [[state.board.board[i][j] for j in range(10)] for i in range(10)]
+        new_row = [state.board.row[i] for i in range(10)]
+        new_column = [state.board.column[i] for i in range(10)]
+        new_board = Board(new_board_array, new_row, new_column)
+        new_state = BimaruState(new_board)
         posx_i = action[0][0]
         posy_i = action[0][1]
         posx_f = action[1][0]
         posy_f = action[1][1]
         size = action[2]
+        if not isinstance(size, int) and size == 'W':
+            new_state.board.board[posx_i][posy_i] = 'W'
+            new_state.board.fill_full_rows()
+            return new_state
         if size == 1:
-            state.board.board[posx_i][posy_i] = 'C'
-            state.board.clear_nearby_positions(posx_i, posy_i, size, False)
-            state.board.row[posx_i] = state.board.row[posx_i] - 1
-            state.board.column[posy_i] = state.board.column[posy_i] - 1
-            return 0
+            new_state.board.board[posx_i][posy_i] = 'C'
+            new_state.board.clear_nearby_positions(posx_i, posy_i, size, False)
+            new_state.board.row[posx_i] = new_state.board.row[posx_i] - 1
+            new_state.board.column[posy_i] = new_state.board.column[posy_i] - 1
+            new_state.board.fill_full_rows()
+            return new_state
         if posx_i == posx_f:
             if size >= 3:
-                state.board.board[posx_i][posy_i + 1] = 'M'
-                state.board.column[posy_i + 1] = state.board.column[posy_i + 1] - 1
+                new_state.board.board[posx_i][posy_i + 1] = 'M'
+                new_state.board.column[posy_i + 1] = new_state.board.column[posy_i + 1] - 1
                 if size == 4:
-                    state.board.board[posx_i][posy_i + 2] = 'M'
-                    state.board.column[posy_i + 2] = state.board.column[posy_i + 2] - 1
-            state.board.board[posx_i][posy_i] = 'L'
-            state.board.board[posx_f][posy_f] = 'R'
-            state.board.row[posx_i] = state.board.row[posx_i] - size
-            state.board.column[posy_i] = state.board.column[posy_i] - 1
-            state.board.column[posy_f] = state.board.column[posy_f] - 1
-            state.board.clear_nearby_positions(posx_i, posy_i, size, False)
+                    new_state.board.board[posx_i][posy_i + 2] = 'M'
+                    new_state.board.column[posy_i + 2] = new_state.board.column[posy_i + 2] - 1
+            new_state.board.board[posx_i][posy_i] = 'L'
+            new_state.board.board[posx_f][posy_f] = 'R'
+            new_state.board.row[posx_i] = new_state.board.row[posx_i] - size
+            new_state.board.column[posy_i] = new_state.board.column[posy_i] - 1
+            new_state.board.column[posy_f] = new_state.board.column[posy_f] - 1
+            new_state.board.clear_nearby_positions(posx_i, posy_i, size, False)
         if posy_i == posy_f:
             if size >= 3:
-                state.board.board[posx_i + 1][posy_i] = 'M'
-                state.board.row[posx_i + 1] = state.board.row[posx_i + 1] - 1
+                new_state.board.board[posx_i + 1][posy_i] = 'M'
+                new_state.board.row[posx_i + 1] = new_state.board.row[posx_i + 1] - 1
                 if size == 4:
-                    state.board.board[posx_i + 2][posy_i] = 'M'
-                    state.board.row[posx_i + 2] = state.board.row[posx_i + 2] - 1
-            state.board.board[posx_i][posy_i] = 'T'
-            state.board.board[posx_f][posy_f] = 'B'
-            state.board.column[posy_i] = state.board.column[posy_i] - size
-            state.board.row[posx_i] = state.board.row[posx_i] - 1
-            state.board.row[posx_f] = state.board.row[posx_f] - 1
-            state.board.clear_nearby_positions(posx_i, posy_i, size, True)
-        self.board.fill_full_rows()
-        return state
+                    new_state.board.board[posx_i + 2][posy_i] = 'M'
+                    new_state.board.row[posx_i + 2] = new_state.board.row[posx_i + 2] - 1
+            new_state.board.board[posx_i][posy_i] = 'T'
+            new_state.board.board[posx_f][posy_f] = 'B'
+            new_state.board.column[posy_i] = new_state.board.column[posy_i] - size
+            new_state.board.row[posx_i] = new_state.board.row[posx_i] - 1
+            new_state.board.row[posx_f] = new_state.board.row[posx_f] - 1
+            new_state.board.clear_nearby_positions(posx_i, posy_i, size, True)
+        new_state.board.fill_full_rows()
+        return new_state
 
     def goal_test(self, state: BimaruState):
         size1 = 0
@@ -201,11 +210,11 @@ class Bimaru(Problem):
         size3 = 0 
         size4 = 0
         for i in range(10):
-            if self.board.row[i] != 0 or self.board.column[i] != 0:
+            if state.board.row[i] != 0 or state.board.column[i] != 0:
                 return False
             for j in range(10):
                 if(state.board.board[i][j] != '' and state.board.board[i][j] != '.' and state.board.board[i][j] != 'W'):
-                    size = self.check_valid_positions(i, j)
+                    size = self.check_valid_positions(state, i, j)
                     if size == -1:
                         return False
                     if size == 1:
@@ -237,49 +246,49 @@ class Bimaru(Problem):
         # TODO
         pass
 
-    def check_valid_positions(self, row: int, col:int) -> bool:
+    def check_valid_positions(self, state: BimaruState, row: int, col:int) -> bool:
         i = row
         j = col
-        piece = self.board.board[i][j]
+        piece = state.board.board[i][j]
         if piece == 'C':
-            if self.board.adjacent_positions_empty(i, j) != 0:
+            if state.board.adjacent_positions_empty(i, j) != 0:
                 return -1
             return 1
         if piece == 'M':
-            if self.board.adjacent_positions_empty(i, j) != 2:
+            if state.board.adjacent_positions_empty(i, j) != 2:
                 return -1
-            HBorders = self.board.adjacent_horizontal_values(i+1, j+1)
-            VBorders = self.board.adjacent_vertical_values(i+1, j+1)
+            HBorders = state.board.adjacent_horizontal_values(i+1, j+1)
+            VBorders = state.board.adjacent_vertical_values(i+1, j+1)
             if VBorders != ('T', 'B') and VBorders != ('T', 'M') and VBorders != ('M', 'B') and HBorders != ('L', 'M') and HBorders != ('L', 'R') and HBorders != ('M', 'R'):
                 return -1
         if piece != 'C' and piece != 'M':
-            if self.board.adjacent_positions_empty(i, j) != 1:
+            if state.board.adjacent_positions_empty(i, j) != 1:
                 return -1
             if piece == 'L':
-                RBorder = self.board.board[i][j+1]
+                RBorder = state.board.board[i][j+1]
                 if RBorder != 'R' and RBorder != 'M':
                     return -1
             if piece == 'R':
-                LBorder = self.board.board[i][j-1]
+                LBorder = state.board.board[i][j-1]
                 if LBorder != 'L' and LBorder != 'M':
                     return -1
                 for n in range(1, 5):
                     if j - n < 0:
                         return n
-                    if self.board.board[i][j-n] == '' or self.board.board[i][j-n] == '.' or self.board.board[i][j-n] == 'W':
+                    if state.board.board[i][j-n] == '' or state.board.board[i][j-n] == '.' or state.board.board[i][j-n] == 'W':
                         return n
             if piece == 'T':
-                BBorder = self.board.board[i+1][j]
+                BBorder = state.board.board[i+1][j]
                 if BBorder != 'M' and BBorder != 'B':
                     return -1
             if piece == 'B':
-                TBorder = self.board.board[i-1][j] 
+                TBorder = state.board.board[i-1][j] 
                 if TBorder != 'T' and TBorder != 'M':
                     return -1
                 for n in range(1, 5):
                     if i - n < 0:
                         return n
-                    if self.board.board[i-n][j] == '' or self.board.board[i-n][j] == '.' or self.board.board[i-n][j] == 'W':
+                    if state.board.board[i-n][j] == '' or state.board.board[i-n][j] == '.' or state.board.board[i-n][j] == 'W':
                         return n
         return 0
     
@@ -295,7 +304,6 @@ if __name__ == "__main__":
     # Imprimir para o standard output no formato indicado.
     bimaru = Bimaru(board)
     bimaru_state = BimaruState(board)
-    #bimaru.result(bimaru_state, ((0, 0), (2, 0), 3))
-    bimaru_state.board.print()
-    print(bimaru.goal_test(bimaru_state))
+    b1 = bimaru.result(bimaru_state, ((0, 0), (2, 0), 3))
+    #print(bimaru.goal_test(bimaru_state))
     pass
