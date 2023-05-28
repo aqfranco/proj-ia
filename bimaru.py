@@ -45,17 +45,23 @@ class Board:
 
     def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
         if row == 1:
-            return "(, " + self.board[row][col-1] + ")"
+            t = ('null', self.board[row][col-1])
+            return t
         if row == 10:
-            return "(" + self.board[row-2][col-1] + ", )"
-        return "(" + self.board[row-2][col-1] + ", " + self.board[row][col-1] + ")"
+            t = (self.board[row-2][col-1], 'null')
+            return t
+        t = (self.board[row-2][col-1], self.board[row][col-1])
+        return t
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         if col == 1:
-            return "(, " + self.board[row-1][col] + ")"
+            t = ('null', self.board[row-1][col])
+            return t
         if col == 10:
-            return "(" + self.board[row-1][col-2] + ", )"
-        return "(" + self.board[row-1][col-2] + ", " + self.board[row-1][col] + ")"
+            t = (self.board[row-1][col-2], 'null')
+            return t
+        t = (self.board[row-1][col-2], self.board[row-1][col])
+        return t
 
     @staticmethod
     def parse_instance():
@@ -75,7 +81,7 @@ class Board:
         board = Board(board_array, row, column)
         return board
 
-    def adjacent_positions_empty(self, row: int, col: int) -> int:
+    def adjacent_positions_empty(self, row: int, col: int, type: int) -> int:
         n = 0
         for i in range(row - 1, row + 2, 1):
             if i < 0:
@@ -85,8 +91,11 @@ class Board:
             for j in range(col - 1, col + 2, 1):
                 if j < 0 or j > 9 or (i == row and j == col):
                     continue
-                if self.board[i][j] != '' and self.board[i][j] != '.' and self.board[i][j] != 'W':
-                    n = n + 1
+                if self.board[i][j] != '' and self.board[i][j] != '.' and self.board[i][j] != 'W':   
+                    if type == 0:
+                        n = n + 1
+                    if type == 1:
+                        self.board[i][j] == '.'
         return n
 
     def print(self):
@@ -113,15 +122,29 @@ class Bimaru(Problem):
         pass
 
     def result(self, state: BimaruState, action):
+        if action[2] == 1:
+            state.board.board[action[0][0]][action[0][1]] = 'C'
+            state.board.adjacent_positions_empty(action[0][0], action[0][1], 1)
+            state.board.row[action[0][0]] = state.board.row[action[0][0]] - 1
+            state.board.column[action[0][1]] = state.board.column[action[0][1]] - 1
         """Retorna o estado resultante de executar a 'action' sobre
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
-        fill_full_rows(state)
+        self.fill_full_rows(state)
         # TODO
         pass
 
     def fill_full_rows(self, state: BimaruState):
+        for i in range(10):
+            if self.board.row[i] == 0:
+                for j in range(10):
+                    if self.board.board[i][j] == '':
+                        self.board.board[i][j] = '.'
+            if self.board.column[i] == 0:
+                for j in range(10):
+                    if self.board.board[j][i] == '':
+                        self.board.board[j][i] = '.'
         return 0
 
     def goal_test(self, state: BimaruState):
@@ -169,18 +192,18 @@ class Bimaru(Problem):
         j = col
         piece = self.board.board[i][j]
         if piece == 'C':
-            if self.board.adjacent_positions_empty(i, j) != 0:
+            if self.board.adjacent_positions_empty(i, j, 0) != 0:
                 return -1
             return 1
         if piece == 'M':
-            if self.board.adjacent_positions_empty(i, j) != 2:
+            if self.board.adjacent_positions_empty(i, j, 0) != 2:
                 return -1
             HBorders = self.board.adjacent_horizontal_values(i+1, j+1)
             VBorders = self.board.adjacent_vertical_values(i+1, j+1)
-            if VBorders != '(T, B)' and VBorders != '(T, M)' and VBorders != '(M, B)' and HBorders != '(L, M)' and HBorders != '(L, R)' and HBorders != '(M, R)':
+            if VBorders != ('T', 'B') and VBorders != ('T', 'M') and VBorders != ('M', 'B') and HBorders != ('L', 'M') and HBorders != ('L', 'R') and HBorders != ('M', 'R'):
                 return -1
         if piece != 'C' and piece != 'M':
-            if self.board.adjacent_positions_empty(i, j) != 1:
+            if self.board.adjacent_positions_empty(i, j, 0) != 1:
                 return -1
             if piece == 'L':
                 RBorder = self.board.board[i][j+1]
@@ -222,6 +245,7 @@ if __name__ == "__main__":
     # Imprimir para o standard output no formato indicado.
     bimaru = Bimaru(board)
     bimaru_state = BimaruState(board)
+    #bimaru.result(bimaru_state, ((0, 0), (0, 0), 1))
     bimaru_state.board.print()
     print(bimaru.goal_test(bimaru_state))
 
