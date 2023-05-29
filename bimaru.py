@@ -228,6 +228,14 @@ class Bimaru(Problem):
                             T = ((i-k, j), (i+k-1, j), k+1)
                             action.append(T)      
         return action
+    
+    def check_actions_empty(self, state: BimaruState, row: int, col: int):
+        if state.board.adjacent_positions_empty(row, col) != 0:
+            return False
+        if ((row > 1 and state.board.board[row-2][col] == 'T') or (row < 8 and state.board.board[row+2][col] == 'B') 
+        or (col > 1 and state.board.board[row][col-2] == 'L') or (col < 8 and state.board.board[row][col+2] == 'R')):
+            return False
+        return True
 
     def actions(self, state: BimaruState):
         action = list()
@@ -244,6 +252,25 @@ class Bimaru(Problem):
                 if piece != '':
                     if self.check_valid_positions(state, i, j) == -1:
                         action = self.get_actions_hints(state, piece, i, j, action)
+                if piece == '':
+                    if not self.check_actions_empty(state, i, j):
+                        continue
+                    T = ((i, j), (i, j), 1)
+                    action.append(T)
+                    size = min(4, row + 1)
+                    for k in range(1, size):
+                        if j + k > 9:
+                            break
+                        if self.check_actions_empty(state, i, j+k) and state.board.board[i][j+k] == '':
+                            T = ((i, j), (i, j+k), k+1)
+                            action.append(T)
+                    size = min(4, state.board.column[j]+1)
+                    for k in range(1, size):
+                        if i + k > 9:
+                            break
+                        if self.check_actions_empty(state, i+k, j) and state.board.board[i+k][j] == '':
+                            T = ((i, j), (i+k, j), k+1)
+                            action.append(T)
         return action      
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
@@ -389,7 +416,7 @@ if __name__ == "__main__":
     # Imprimir para o standard output no formato indicado.
     bimaru = Bimaru(board)
     bimaru_state = BimaruState(board)
-    #print(bimaru.actions(bimaru_state))
+    print(bimaru.actions(bimaru_state))
     #b1 = bimaru.result(bimaru_state, ((0, 0), (2, 0), 3))
-    #bimaru.board.print()
+    bimaru.board.print()
     pass
