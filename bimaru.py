@@ -77,8 +77,9 @@ class Board:
             h_row = int(hint[1])
             h_col = int(hint[2])
             board_array[h_row][h_col] = hint[3]
-            row[h_row] = row[h_row] - 1
             if(hint[3] != 'W'):
+                row[h_row] = row[h_row] - 1
+                column[h_col] = column[h_col] - 1
                 for i in range(h_row - 1, h_row + 2, 1):
                     if i < 0:
                         continue
@@ -163,6 +164,8 @@ class Board:
         for i in range(10):
             for j in range(10):
                 if self.board[i][j] == '':
+                    print('.', end = '')
+                if self.board[i][j] == '.':
                     print('*', end = '')
                 else:
                     print(self.board[i][j], end = '')
@@ -175,6 +178,56 @@ class Bimaru(Problem):
         """O construtor especifica o estado inicial."""
         # TODO
         pass
+
+    def get_actions_hints(self, state, piece, row: int, col: int, action):
+        i = row
+        j = col
+        if (piece == 'M' and ((j > 0 and j < 9) or i == 0 or i == 9))  or piece == 'T' or piece == 'B':
+            size = min(4, state.board.column[i] + 1)
+            for k in range(1, size):
+                if piece == 'T':
+                    if state.board.board[i+k][j] == '':
+                        T = ((i, j), (i+k, j), k+1)
+                        action.append(T)
+                if piece == 'B':
+                    if state.board.board[i-k][j] == '':
+                        T = ((i-k, j), (i, j), k+1)
+                        action.append(T)
+                if piece == 'M':    
+                    if k == 1 and state.board.board[i][j+k] == '' and state.board.board[i][j-k] == '':
+                        T = ((i, j-k), (i, j+k), k+2)
+                        action.append(T)
+                        k += 1
+                    if k > 2:
+                        if state.board.board[i][j+k] == '':
+                            T = ((i, j-k+1), (i, j+k), k+1)
+                            action.append(T)
+                        if state.board.board[i][j-k] == '':
+                            T = ((i, j-k), (i, j+k-1), k+1)
+                            action.append(T)
+        if (piece == 'M' and ((i > 0 and i < 9) or j == 0 or j == 9))  or piece == 'R' or piece == 'L':
+            size = min(4, state.board.row[i] + 1)
+            for k in range(1, size):
+                if piece == 'R':
+                    if state.board.board[i][j-k] == '':
+                        T = ((i, j-k), (i, j), k+1)
+                        action.append(T)
+                if piece == 'L':
+                    if state.board.board[i][j+k] == '':
+                        T = ((i, j), (i, j+k), k+1)
+                        action.append(T)
+                if piece == 'M':
+                    if k == 1 and state.board.board[i+k][j] == '' and state.board.board[i-k][j] == '':
+                        T = ((i-k, j), (i+k, j), k+2)
+                        action.append(T)
+                    if k > 2:
+                        if state.board.board[i+k][j] == '':
+                            T = ((i-k+1, j), (i+k, j), k+1)
+                            action.append(T)
+                        if state.board.board[i-k][j] == '':
+                            T = ((i-k, j), (i+k-1, j), k+1)
+                            action.append(T)      
+        return action
 
     def actions(self, state: BimaruState):
         action = list()
@@ -190,49 +243,7 @@ class Bimaru(Problem):
                     continue
                 if piece != '':
                     if self.check_valid_positions(state, i, j) == -1:
-                        print(piece)
-                        for k in range(1, row+1):
-                            if piece == 'R':
-                                if state.board.board[i][j-k] == '':
-                                    T = ((i, j-k), (i, j), k+1)
-                                    action.append(T)
-                            if piece == 'L':
-                                if state.board.board[i][j+k] == '':
-                                    T = ((i, j), (i, j+k), k+1)
-                                    action.append(T)
-                            if piece == 'T':
-                                if state.board.board[i+k][j] == '':
-                                    T = ((i, j), (i+k, j), k+1)
-                                    action.append(T)
-                            if piece == 'B':
-                                if state.board.board[i-k][j] == '':
-                                    T = ((i-k, j), (i, j), k+1)
-                                    action.append(T)
-                            if piece == 'M':
-                                if (i > 0 and i < 9) or j == 0 or j == 9:
-                                    if k == 1:
-                                        T = ((i-k, j), (i+k, j), k+2)
-                                        action.append(T)
-                                    else:
-                                        if state.board.board[i+k][j] == '':
-                                            T = ((i-k+1, j), (i+k, j), k+1)
-                                            action.append(T)
-                                        if state.board.board[i-k][j] == '':
-                                            T = ((i-k, j), (i+k-1, j), k+1)
-                                            action.append(T)                        
-                                if (j > 0 and j < 9) or i == 0 or i == 9:
-                                    if k == 1:
-                                        T = ((i, j-k), (i, j+k), k+2)
-                                        action.append(T)
-                                    else:
-                                        if state.board.board[i][j+k] == '':
-                                            T = ((i, j-k+1), (i, j+k), k+1)
-                                            action.append(T)
-                                        if state.board.board[i][j-k] == '':
-                                            T = ((i, j-k), (i, j+k-1), k+1)
-                                            action.append(T)
-                                if k == 1:
-                                    k += 1
+                        action = self.get_actions_hints(state, piece, i, j, action)
         return action      
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
@@ -257,10 +268,6 @@ class Bimaru(Problem):
         posx_f = action[1][0]
         posy_f = action[1][1]
         size = action[2]
-        if not isinstance(size, int) and size == 'W':
-            new_state.board.board[posx_i][posy_i] = 'W'
-            new_state.board.fill_full_rows()
-            return new_state
         if size == 1:
             self.add_position(new_state, posx_i, posy_i, 'C', size)
             return new_state
@@ -382,7 +389,7 @@ if __name__ == "__main__":
     # Imprimir para o standard output no formato indicado.
     bimaru = Bimaru(board)
     bimaru_state = BimaruState(board)
-    print(bimaru.actions(bimaru_state))
+    #print(bimaru.actions(bimaru_state))
     #b1 = bimaru.result(bimaru_state, ((0, 0), (2, 0), 3))
-    bimaru.board.print()
+    #bimaru.board.print()
     pass
