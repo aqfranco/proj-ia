@@ -74,9 +74,29 @@ class Board:
         x = 0
         while x < hints:
             hint = stdin.readline().split()
-            board_array[int(hint[1])][int(hint[2])] = hint[3]
-            row[int(hint[1])] = row[int(hint[1])] - 1
-            column[int(hint[2])] = column[int(hint[2])] - 1
+            h_row = int(hint[1])
+            h_col = int(hint[2])
+            board_array[h_row][h_col] = hint[3]
+            row[h_row] = row[h_row] - 1
+            if(hint[3] != 'W'):
+                for i in range(h_row - 1, h_row + 2, 1):
+                    if i < 0:
+                        continue
+                    if i > 9:
+                        break
+                    for j in range(h_col - 1, h_col + 2, 1):
+                        if j < 0 or j > 9 or i == h_row and j == h_col:
+                            continue
+                        if hint[3] == 'L' and i == h_row and j == h_col + 1:
+                            continue
+                        if hint[3] == 'R' and i == h_row and j == h_col - 1:
+                            continue
+                        if hint[3] == 'T' and j == h_col and i == h_row + 1:
+                            continue
+                        if hint[3] == 'B' and j == h_col and i == h_row - 1:
+                            continue
+                        if board_array[i][j] == '':
+                            board_array[i][j] = '.'
             x = x + 1
         board = Board(board_array, row, column)
         return board
@@ -134,7 +154,7 @@ class Board:
         for i in range(10):
             for j in range(10):
                 if self.board[i][j] == '':
-                    print('.', end = '')
+                    print('*', end = '')
                 else:
                     print(self.board[i][j], end = '')
             print('\n')
@@ -148,10 +168,32 @@ class Bimaru(Problem):
         pass
 
     def actions(self, state: BimaruState):
+        action = []
+        for i in range(10):
+            row = state.board.row[i]
+            if row == 0:
+                continue
+            for j in range(10):
+                if state.board.column[j] == 0:
+                    continue
+                if state.board.board[i][j] == '.' or state.board.board[i][j] == 'W':
+                    continue
+                if state.board.board[i][j] != '':
+                    if self.check_valid_positions(state, i, j) == -1:
+                        continue
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
         # TODO
         pass
+
+    def add_position(self, state: BimaruState, row: int, col: int, piece, size: int):
+        if state.board.board[row][col] == '':
+            state.board.board[row][col] = piece
+            state.board.row[row] = state.board.row[row] - 1
+            state.board.column[col] = state.board.column[col] - 1
+            if size == 1:
+                state.board.clear_nearby_positions(row, col, size, False)
+                state.board.fill_full_rows()
 
     def result(self, state: BimaruState, action):
         new_board_array = [[state.board.board[i][j] for j in range(10)] for i in range(10)]
@@ -169,37 +211,23 @@ class Bimaru(Problem):
             new_state.board.fill_full_rows()
             return new_state
         if size == 1:
-            new_state.board.board[posx_i][posy_i] = 'C'
-            new_state.board.clear_nearby_positions(posx_i, posy_i, size, False)
-            new_state.board.row[posx_i] = new_state.board.row[posx_i] - 1
-            new_state.board.column[posy_i] = new_state.board.column[posy_i] - 1
-            new_state.board.fill_full_rows()
+            self.add_position(new_state, posx_i, posy_i, 'C', size)
             return new_state
         if posx_i == posx_f:
             if size >= 3:
-                new_state.board.board[posx_i][posy_i + 1] = 'M'
-                new_state.board.column[posy_i + 1] = new_state.board.column[posy_i + 1] - 1
+                self.add_position(new_state, posx_i, posy_i + 1, 'M', size)
                 if size == 4:
-                    new_state.board.board[posx_i][posy_i + 2] = 'M'
-                    new_state.board.column[posy_i + 2] = new_state.board.column[posy_i + 2] - 1
-            new_state.board.board[posx_i][posy_i] = 'L'
-            new_state.board.board[posx_f][posy_f] = 'R'
-            new_state.board.row[posx_i] = new_state.board.row[posx_i] - size
-            new_state.board.column[posy_i] = new_state.board.column[posy_i] - 1
-            new_state.board.column[posy_f] = new_state.board.column[posy_f] - 1
+                    self.add_position(new_state, posx_i, posy_i + 2, 'M', size)
+            self.add_position(new_state, posx_i, posy_i, 'L', size)
+            self.add_position(new_state, posx_f, posy_f, 'R', size)
             new_state.board.clear_nearby_positions(posx_i, posy_i, size, False)
         if posy_i == posy_f:
             if size >= 3:
-                new_state.board.board[posx_i + 1][posy_i] = 'M'
-                new_state.board.row[posx_i + 1] = new_state.board.row[posx_i + 1] - 1
+                self.add_position(new_state, posx_i + 1, posy_i, 'M', size)
                 if size == 4:
-                    new_state.board.board[posx_i + 2][posy_i] = 'M'
-                    new_state.board.row[posx_i + 2] = new_state.board.row[posx_i + 2] - 1
-            new_state.board.board[posx_i][posy_i] = 'T'
-            new_state.board.board[posx_f][posy_f] = 'B'
-            new_state.board.column[posy_i] = new_state.board.column[posy_i] - size
-            new_state.board.row[posx_i] = new_state.board.row[posx_i] - 1
-            new_state.board.row[posx_f] = new_state.board.row[posx_f] - 1
+                    self.add_position(new_state, posx_i + 2, posy_i, 'M', size)
+            self.add_position(new_state, posx_i, posy_i, 'T', size)
+            self.add_position(new_state, posx_f, posy_f, 'B', size)
             new_state.board.clear_nearby_positions(posx_i, posy_i, size, True)
         new_state.board.fill_full_rows()
         return new_state
@@ -237,9 +265,9 @@ class Bimaru(Problem):
                             return False
                         if size4 < 1:
                             size4 = size4 + 1
-        if size1 == 4 and size2 == 3 and size3 == 2 and size4 == 1:
+        #if size1 == 4 and size2 == 3 and size3 == 2 and size4 == 1:
             return True
-        return False
+        #return False
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
@@ -291,19 +319,19 @@ class Bimaru(Problem):
                     if state.board.board[i-n][j] == '' or state.board.board[i-n][j] == '.' or state.board.board[i-n][j] == 'W':
                         return n
         return 0
-    
     # TODO: outros metodos da classe
 
 
 if __name__ == "__main__":
     board = Board.parse_instance()
-    #board.fill_full_rows()
+    board.fill_full_rows()
     # Ler o ficheiro do standard input,
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
     bimaru = Bimaru(board)
     bimaru_state = BimaruState(board)
+    #bimaru.actions(bimaru_state)
     #b1 = bimaru.result(bimaru_state, ((0, 0), (2, 0), 3))
-    #print(bimaru.goal_test(bimaru_state))
+    #b1.board.print()
     pass
