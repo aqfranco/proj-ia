@@ -3,8 +3,8 @@
 # Além das funções e classes já definidas, podem acrescentar outras que considerem pertinentes.
 
 # Grupo 00:
-# 00000 Nome1
-# 00000 Nome2
+# 199318 Rita Pessoa
+# 102635 Andre Franco
 
 import sys
 from search import (
@@ -65,11 +65,15 @@ class Board:
 
     @staticmethod
     def parse_instance():
+        #create board as a matrix
         board_array = [['' for i in range(10)] for j in range(10)]
+        #create row as the number of pieces on each row missing
         row = stdin.readline().split()
         row = [int(x) for x in row if x.isdigit()]
+        #create column as the number of pieces on each column missing
         column = stdin.readline().split()
         column = [int(x) for x in column if x.isdigit()]
+        #create hints by placing each hint on the respective spot of the matrix
         hints = int(stdin.readline())
         x = 0
         while x < hints:
@@ -78,8 +82,10 @@ class Board:
             h_col = int(hint[2])
             board_array[h_row][h_col] = hint[3]
             if(hint[3] != 'W'):
+                #everytime a piece is added we must remove 1 from the respective row and column values
                 row[h_row] = row[h_row] - 1
                 column[h_col] = column[h_col] - 1
+                #everytime there is a hint that is not water we will put water around it ( with the respective exceptions)
                 for i in range(h_row - 1, h_row + 2, 1):
                     if i < 0:
                         continue
@@ -108,6 +114,7 @@ class Board:
                         if board_array[i][j] == '':
                             board_array[i][j] = '.'
             x = x + 1
+        #given the board_array, the row and column we will create  our Board
         board = Board(board_array, row, column)
         return board
     
@@ -150,6 +157,7 @@ class Board:
                         self.board[i][j] = '.'
     
     def fill_full_rows(self):
+        #if there are no more pieces to put in a row or column we will fill those with water
         for i in range(10):
             if self.row[i] == 0:
                 for j in range(10):
@@ -165,7 +173,7 @@ class Board:
             for j in range(10):
                 if self.board[i][j] == '':
                     print('.', end = '')
-                if self.board[i][j] == '.':
+                if self.board[i][j] == '.': #to remove
                     print('*', end = '')
                 else:
                     print(self.board[i][j], end = '')
@@ -410,13 +418,12 @@ class Bimaru(Problem):
 if __name__ == "__main__":
     board = Board.parse_instance()
     board.fill_full_rows()
-    # Ler o ficheiro do standard input,
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
     bimaru = Bimaru(board)
     bimaru_state = BimaruState(board)
-    print(bimaru.actions(bimaru_state))
+    ###print(bimaru.actions(bimaru_state)) to remove
     #b1 = bimaru.result(bimaru_state, ((0, 0), (2, 0), 3))
     bimaru.board.print()
     pass
