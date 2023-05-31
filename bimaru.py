@@ -391,7 +391,7 @@ class Bimaru(Problem):
                 if piece == '':
                     if not self.check_actions_empty(state, i, j):
                         continue
-                    if size1 != 0: 
+                    if state.board.size[1] == 0 and state.board.size[2] == 0 and state.board.size[3] == 0 and size1 != 0: 
                         T = ((i, j), (i, j), 1)
                         action.append(T)
                     size = min(4, row)
