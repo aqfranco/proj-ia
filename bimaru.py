@@ -2,7 +2,7 @@
 # Devem alterar as classes e funções neste ficheiro de acordo com as instruções do enunciado.
 # Além das funções e classes já definidas, podem acrescentar outras que considerem pertinentes.
 
-# Grupo 00:
+# Grupo 146:
 # 199318 Rita Pessoa
 # 102635 Andre Franco
 
@@ -45,6 +45,7 @@ class Board:
         return self.board[row-1][col-1]
 
     def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
+        # Get adjacent values vertically above and below the current position
         if row == 1:
             t = ('null', self.board[row][col-1])
             return t
@@ -55,6 +56,7 @@ class Board:
         return t
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
+        # Get adjacent values horizontally left and right of the current position
         if col == 1:
             t = ('null', self.board[row-1][col])
             return t
@@ -118,7 +120,11 @@ class Board:
                         if board_array[i][j] == '':
                             board_array[i][j] = '.'
             x = x + 1
-        #given the board_array, the row and column we will create  our Board
+        '''
+        given the board_array, the row and column we will create  our Board
+        the board keeps an array called size that stores the values of the number of boats missing
+        we start off by checking if there are any boats of 1 piece already on the board
+        '''
         board = Board(board_array, row, column, [4-y, 3, 2, 1])
         return board
     
@@ -177,8 +183,8 @@ class Board:
             for j in range(10):
                 if self.board[i][j] == '':
                     print('.', end = '')
-                if self.board[i][j] == '.': #to remove
-                    print('*', end = '')
+                    '''if self.board[i][j] == '.': #to remove
+                    print('*', end = '')'''
                 else:
                     print(self.board[i][j], end = '')
             print('\n')
@@ -187,7 +193,7 @@ class Board:
 class Bimaru(Problem):
     def __init__(self, board: Board):
         self.board = board
-        """O construtor especifica o estado inicial."""
+        self.initial = BimaruState(board)
         # TODO
         pass
 
@@ -263,10 +269,9 @@ class Bimaru(Problem):
         or (col > 1 and state.board.board[row][col-2] == 'L') or (col < 8 and state.board.board[row][col+2] == 'R')):
             return False
         return True
-
-    def actions(self, state: BimaruState):
+    
+    def actions_aux(self, state:BimaruState, boat_size):
         action = list()
-        size1 = state.board.size[0]
         for i in range(10):
             row = state.board.row[i]
             if row == 0:
@@ -283,7 +288,7 @@ class Bimaru(Problem):
                 if piece == '':
                     if not self.check_actions_empty(state, i, j):
                         continue
-                    if size1 != 0: 
+                    if boat_size != 0: 
                         T = ((i, j), (i, j), 1)
                         action.append(T)
                     size = min(4, row)
@@ -300,15 +305,32 @@ class Bimaru(Problem):
                     for k in range(1, size):
                         if i + k > 9:
                             break
-                        if state.board.size[k] == 0:
+                        if boat_size == 0:
                             continue
                         if not self.check_actions_empty(state, i+k, j) or state.board.board[i+k][j] != '':
                             break
                         T = ((i, j), (i+k, j), k+1)
                         action.append(T)
-        return action
+        correct_actions = []
+        for a in action:
+            if a[2] == boat_size:
+                correct_actions.append(a)
+        return correct_actions
+    
+
+    def actions(self, state: BimaruState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
+        if self.board.size[3] != 0:
+            return self.actions_aux(state, 4)
+        elif self.board.size[2] != 0:
+            return self.actions_aux(state, 3)
+        elif self.board.size[1] != 0:
+            return self.actions_aux(state, 2)
+        elif self.board.size[0] != 0:
+            return self.actions_aux(state, 1)
+        else:
+            return []
 
     def add_position(self, state: BimaruState, row: int, col: int, piece, size: int):
         if state.board.board[row][col] == '':
@@ -366,12 +388,15 @@ class Bimaru(Problem):
                     state.board.size[size - 1] -= 1
     
     def goal_test(self, state: BimaruState):
+        #checks if there are more boats to add
         if state.board.size[0] != 0 or state.board.size[1] != 0 or state.board.size[2] != 0 or state.board.size[3] != 0:
             return False
+        #checks if board rows and columns are full
         for i in range(10):
             if state.board.row[i] != 0 or state.board.column[i] != 0:
                 return False
             for j in range(10):
+                #checks if pieces are placed in valid positions
                 if(state.board.board[i][j] != '' and state.board.board[i][j] != '.' and state.board.board[i][j] != 'W'):
                     size = self.check_valid_positions(state, i, j)
                     if size == -1:
@@ -387,17 +412,21 @@ class Bimaru(Problem):
         i = row
         j = col
         piece = state.board.board[i][j]
+        #checks if around the piece circle the positions are full (of water)
         if piece == 'C':
             if state.board.adjacent_positions_empty(i, j) != 0:
                 return -1
             return 1
+        #checks if the piece middle has at least two empty adjacent positions
         if piece == 'M':
             if state.board.adjacent_positions_empty(i, j) != 2:
                 return -1
             HBorders = state.board.adjacent_horizontal_values(i+1, j+1)
             VBorders = state.board.adjacent_vertical_values(i+1, j+1)
+            #checks if th middle piece is surrounded with the right pieces
             if VBorders != ('T', 'B') and VBorders != ('T', 'M') and VBorders != ('M', 'B') and HBorders != ('L', 'M') and HBorders != ('L', 'R') and HBorders != ('M', 'R'):
                 return -1
+        #checks if 
         if piece != 'C' and piece != 'M':
             if state.board.adjacent_positions_empty(i, j) != 1:
                 return -1
@@ -433,15 +462,14 @@ class Bimaru(Problem):
 
 if __name__ == "__main__":
     board = Board.parse_instance()
+    #fill full rows with water
     board.fill_full_rows()
-    # Usar uma técnica de procura para resolver a instância,
-    # Retirar a solução a partir do nó resultante,
-    # Imprimir para o standard output no formato indicado.
-    bimaru = Bimaru(board)
-    bimaru_state = BimaruState(board)
-    bimaru.check_size_pieces(bimaru_state)
-    print(bimaru.actions(bimaru_state))
-    #b1 = bimaru.result(bimaru_state, ((0, 0), (3, 0), 4))
-    #print(bimaru.actions(bimaru_state))
-    bimaru.board.print()
+    to_solve = Bimaru(board)
+    #checks if there are any boats ( of more than 1 piece ) already on the board
+    initial_state = BimaruState(board)
+    to_solve.check_size_pieces(initial_state)
+    #finds the right node using dfs search
+    solution = depth_first_tree_search(to_solve)
+    #solution.state.board.print()
+    print(solution)
     pass
