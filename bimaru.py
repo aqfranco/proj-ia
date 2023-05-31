@@ -197,33 +197,35 @@ class Bimaru(Problem):
         # TODO
         pass
 
-    def get_actions_hints(self, state, piece, row: int, col: int, action):
+    def get_actions_hints(self, state, piece, row: int, col: int, action, boat_size: int):
         i = row
         j = col
         if (piece == 'M' and ((j > 0 and j < 9) or i == 0 or i == 9))  or piece == 'T' or piece == 'B':
-            size = min(4, state.board.column[i] + 1)
+            size = min(boat_size, state.board.column[i] + 1)
             for k in range(1, size):
                 if state.board.size[k] != 0:
                     if piece == 'T':
                         if state.board.board[i+k][j] != '':
                             break
-                        T = ((i, j), (i+k, j), k+1)
-                        action.append(T)
+                        if k == boat_size - 1:
+                            T = ((i, j), (i+k, j), k+1)
+                            action.append(T)
                     if piece == 'B':
                         if state.board.board[i-k][j] != '':
                             break
-                        T = ((i-k, j), (i, j), k+1)
-                        action.append(T)
+                        if k == boat_size - 1:
+                            T = ((i-k, j), (i, j), k+1)
+                            action.append(T)
                 if piece == 'M':    
                     if k == 1:
                         if state.board.board[i][j+k] != '' or state.board.board[i][j-k] != '' :
                             break
-                        if state.board.size[k+1] != 0:
+                        if state.board.size[k+1] != 0 and k == boat_size - 2:
                             T = ((i, j-k), (i, j+k), k+2)
                             action.append(T)
                         k += 1
                     if k > 2:
-                        if state.board.size[k] != 0:
+                        if state.board.size[k] != 0 and k == boat_size - 1:
                             if state.board.board[i][j+k] == '':
                                 T = ((i, j-k+1), (i, j+k), k+1)
                                 action.append(T)
@@ -231,29 +233,31 @@ class Bimaru(Problem):
                                 T = ((i, j-k), (i, j+k-1), k+1)
                                 action.append(T)
         if (piece == 'M' and ((i > 0 and i < 9) or j == 0 or j == 9))  or piece == 'R' or piece == 'L':
-            size = min(4, state.board.row[i] + 1)
+            size = min(boat_size, state.board.row[i] + 1)
             for k in range(1, size):
                 if state.board.size[k] != 0:
                     if piece == 'R':
                         if state.board.board[i][j-k] != '':
                             break
-                        T = ((i, j-k), (i, j), k+1)
-                        action.append(T)
+                        if k == boat_size - 1:
+                            T = ((i, j-k), (i, j), k+1)
+                            action.append(T)
                     if piece == 'L':
                         if state.board.board[i][j+k] != '':
                             break
-                        T = ((i, j), (i, j+k), k+1)
-                        action.append(T)
+                        if k == boat_size - 1:
+                            T = ((i, j), (i, j+k), k+1)
+                            action.append(T)
                 if piece == 'M':
                     if k == 1:
                         if state.board.board[i+k][j] != '' or state.board.board[i-k][j] != '':
                             break
-                        if state.board.size[k+1] != 0:
+                        if state.board.size[k+1] != 0 and k == boat_size - 2:
                             T = ((i-k, j), (i+k, j), k+2)
                             action.append(T)
                         k += 1
                     if k > 2:
-                        if state.board.size[k] != 0:
+                        if state.board.size[k] != 0 and k == boat_size - 1:
                             if state.board.board[i+k][j] == '':
                                 T = ((i-k+1, j), (i+k, j), k+1)
                                 action.append(T)
@@ -284,51 +288,44 @@ class Bimaru(Problem):
                     continue
                 if piece != '':
                     if self.check_valid_positions(state, i, j) == -1:
-                        action = self.get_actions_hints(state, piece, i, j, action)
+                        action = self.get_actions_hints(state, piece, i, j, action, boat_size)
                 if piece == '':
                     if not self.check_actions_empty(state, i, j):
                         continue
-                    if boat_size != 0: 
+                    if boat_size == 1:
                         T = ((i, j), (i, j), 1)
                         action.append(T)
-                    size = min(4, row)
+                    size = min(boat_size, row)
                     for k in range(1, size):
-                        if j + k > 9:
+                        if j + k > 9 or k > boat_size - 1:
                             break
                         if state.board.size[k] == 0:
                             continue
                         if not self.check_actions_empty(state, i, j+k) or state.board.board[i][j+k] != '':
                             break
-                        T = ((i, j), (i, j+k), k+1)
-                        action.append(T)
-                    size = min(4, state.board.column[j])
+                        if k == boat_size - 1:
+                            T = ((i, j), (i, j+k), k+1)
+                            action.append(T)
+                    size = min(boat_size, state.board.column[j])
                     for k in range(1, size):
-                        if i + k > 9:
+                        if i + k > 9 or k > boat_size - 1:
                             break
-                        if boat_size == 0:
+                        if state.board.size[k] == 0:
                             continue
                         if not self.check_actions_empty(state, i+k, j) or state.board.board[i+k][j] != '':
                             break
-                        T = ((i, j), (i+k, j), k+1)
-                        action.append(T)
-        correct_actions = []
-        for a in action:
-            if a[2] == boat_size:
-                correct_actions.append(a)
-        return correct_actions
+                        if k == boat_size - 1:
+                            T = ((i, j), (i+k, j), k+1)
+                            action.append(T)
+        return action
     
 
     def actions(self, state: BimaruState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
-        if self.board.size[3] != 0:
-            return self.actions_aux(state, 4)
-        elif self.board.size[2] != 0:
-            return self.actions_aux(state, 3)
-        elif self.board.size[1] != 0:
-            return self.actions_aux(state, 2)
-        elif self.board.size[0] != 0:
-            return self.actions_aux(state, 1)
+        for boat_size in reversed(range(4)):
+            if self.board.size[boat_size] != 0:
+                return self.actions_aux(state, boat_size+1)
         else:
             return []
 
@@ -468,6 +465,7 @@ if __name__ == "__main__":
     #checks if there are any boats ( of more than 1 piece ) already on the board
     initial_state = BimaruState(board)
     to_solve.check_size_pieces(initial_state)
+    #print(to_solve.actions(initial_state))
     #finds the right node using dfs search
     solution = depth_first_tree_search(to_solve)
     #solution.state.board.print()
