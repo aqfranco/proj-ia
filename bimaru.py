@@ -210,10 +210,11 @@ class Bimaru(Problem):
                         action.append(T)
                 if piece == 'M':    
                     if k == 1:
-                        if state.board.board[i][j+k] != '' and state.board.board[i][j-k] != '' :
+                        if state.board.board[i][j+k] != '' or state.board.board[i][j-k] != '' :
                             break
-                        T = ((i, j-k), (i, j+k), k+2)
-                        action.append(T)
+                        if state.board.size[k+1] != 0:
+                            T = ((i, j-k), (i, j+k), k+2)
+                            action.append(T)
                         k += 1
                     if k > 2:
                         if state.board.size[k] != 0:
