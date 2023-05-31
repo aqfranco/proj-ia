@@ -199,15 +199,19 @@ class Bimaru(Problem):
             for k in range(1, size):
                 if state.board.size[k] != 0:
                     if piece == 'T':
-                        if state.board.board[i+k][j] == '':
-                            T = ((i, j), (i+k, j), k+1)
-                            action.append(T)
+                        if state.board.board[i+k][j] != '':
+                            break
+                        T = ((i, j), (i+k, j), k+1)
+                        action.append(T)
                     if piece == 'B':
-                        if state.board.board[i-k][j] == '':
-                            T = ((i-k, j), (i, j), k+1)
-                            action.append(T)
+                        if state.board.board[i-k][j] != '':
+                            break
+                        T = ((i-k, j), (i, j), k+1)
+                        action.append(T)
                 if piece == 'M':    
-                    if k == 1 and state.board.board[i][j+k] == '' and state.board.board[i][j-k] == '' and state.board.size[k+1] != 0:
+                    if k == 1:
+                        if state.board.board[i][j+k] != '' and state.board.board[i][j-k] != '' :
+                            break
                         T = ((i, j-k), (i, j+k), k+2)
                         action.append(T)
                         k += 1
@@ -224,17 +228,23 @@ class Bimaru(Problem):
             for k in range(1, size):
                 if state.board.size[k] != 0:
                     if piece == 'R':
-                        if state.board.board[i][j-k] == '':
-                            T = ((i, j-k), (i, j), k+1)
-                            action.append(T)
-                    if piece == 'L':
-                        if state.board.board[i][j+k] == '':
-                            T = ((i, j), (i, j+k), k+1)
-                            action.append(T)
-                if piece == 'M':
-                    if k == 1 and state.board.board[i+k][j] == '' and state.board.board[i-k][j] == '' and state.board.size[k+1] != 0:
-                        T = ((i-k, j), (i+k, j), k+2)
+                        if state.board.board[i][j-k] != '':
+                            break
+                        T = ((i, j-k), (i, j), k+1)
                         action.append(T)
+                    if piece == 'L':
+                        if state.board.board[i][j+k] != '':
+                            break
+                        T = ((i, j), (i, j+k), k+1)
+                        action.append(T)
+                if piece == 'M':
+                    if k == 1:
+                        if state.board.board[i+k][j] != '' or state.board.board[i-k][j] != '':
+                            break
+                        if state.board.size[k+1] != 0:
+                            T = ((i-k, j), (i+k, j), k+2)
+                            action.append(T)
+                        k += 1
                     if k > 2:
                         if state.board.size[k] != 0:
                             if state.board.board[i+k][j] == '':
