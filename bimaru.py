@@ -275,24 +275,26 @@ class Bimaru(Problem):
                     if size1 != 0: 
                         T = ((i, j), (i, j), 1)
                         action.append(T)
-                    size = min(4, row + 1)
+                    size = min(4, row)
                     for k in range(1, size):
                         if j + k > 9:
                             break
-                        if state.board.size[k] != 0:
+                        if state.board.size[k] == 0:
                             continue
-                        if self.check_actions_empty(state, i, j+k) and state.board.board[i][j+k] == '':
-                            T = ((i, j), (i, j+k), k+1)
-                            action.append(T)
-                    size = min(4, state.board.column[j]+1)
+                        if not self.check_actions_empty(state, i, j+k) or state.board.board[i][j+k] != '':
+                            break
+                        T = ((i, j), (i, j+k), k+1)
+                        action.append(T)
+                    size = min(4, state.board.column[j])
                     for k in range(1, size):
                         if i + k > 9:
                             break
-                        if state.board.size[k] != 0:
+                        if state.board.size[k] == 0:
                             continue
-                        if self.check_actions_empty(state, i+k, j) and state.board.board[i+k][j] == '':
-                            T = ((i, j), (i+k, j), k+1)
-                            action.append(T)
+                        if not self.check_actions_empty(state, i+k, j) or state.board.board[i+k][j] != '':
+                            break
+                        T = ((i, j), (i+k, j), k+1)
+                        action.append(T)
         return action
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
@@ -427,7 +429,8 @@ if __name__ == "__main__":
     bimaru = Bimaru(board)
     bimaru_state = BimaruState(board)
     bimaru.check_size_pieces(bimaru_state)
+    print(bimaru.actions(bimaru_state))
     #b1 = bimaru.result(bimaru_state, ((0, 0), (3, 0), 4))
-    ###print(bimaru.actions(b1)) to remove
+    #print(bimaru.actions(bimaru_state))
     bimaru.board.print()
     pass
