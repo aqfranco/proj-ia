@@ -348,22 +348,24 @@ class Bimaru(Problem):
                         action.append(T)
                 if piece == 'M':    
                     if k == 1:
-                        if j + k > 9 or j - k < 0:
+                        if i + k > 9 or i - k < 0:
                             break
-                        if not(state.board.board[i][j+k] == '' and state.board.board[i][j-k] == ''):
+                        if not(state.board.board[i+k][j] == '' and state.board.board[i-k][j] == ''):
                             break
                         if state.board.size[k+1] != 0:
-                            T = ((i, j-k), (i, j+k), k+2)
+                            T = ((i-k, j), (i+k, j), k+2)
                             action.append(T)
                         k += 1
                     if k > 2:
                         if state.board.size[k] != 0:
-                            if state.board.board[i][j+k] == '':
-                                T = ((i, j-k+1), (i, j+k), k+1)
-                                action.append(T)
-                            if state.board.board[i][j-k] == '':
-                                T = ((i, j-k), (i, j+k-1), k+1)
-                                action.append(T)
+                            if i + k <= 9:
+                                if state.board.board[i+k-1][j] == '':
+                                    T = ((i-k+2, j), (i+k-1, j), k+1)
+                                    action.append(T)
+                            if i - k >= 0:
+                                if state.board.board[i-k+1][j] == '':
+                                    T = ((i-k+1, j), (i+k-2, j), k+1)
+                                    action.append(T)      
         if (piece == 'M' and ((i > 0 and i < 9) or j == 0 or j == 9))  or piece == 'R' or piece == 'L':
             size = min(4, state.board.row[i] + 1)
             for k in range(1, size):
@@ -384,22 +386,24 @@ class Bimaru(Problem):
                         action.append(T)
                 if piece == 'M':
                     if k == 1:
-                        if i + k > 9 or i - k < 0:
+                        if j + k > 9 or j - k < 0:
                             break
-                        if not(state.board.board[i+k][j] == '' and state.board.board[i-k][j] == ''):
+                        if not(state.board.board[i][j+k] == '' and state.board.board[i][j-k] == ''):
                             break
                         if state.board.size[k+1] != 0:
-                            T = ((i-k, j), (i+k, j), k+2)
+                            T = ((i, j-k), (i, j+k), k+2)
                             action.append(T)
                         k += 1
                     if k > 2:
                         if state.board.size[k] != 0:
-                            if state.board.board[i+k][j] == '':
-                                T = ((i-k+1, j), (i+k, j), k+1)
-                                action.append(T)
-                            if state.board.board[i-k][j] == '':
-                                T = ((i-k, j), (i+k-1, j), k+1)
-                                action.append(T)      
+                            if j + k <= 9:
+                                if state.board.board[i][j+k-1] == '':
+                                    T = ((i, j-k+2), (i, j+k-1), k+1)
+                                    action.append(T)
+                            if j - k >= 0:
+                                if state.board.board[i][j-k+1] == '':
+                                    T = ((i, j-k+1), (i, j+k-2), k+1)
+                                    action.append(T)
         return action
 
     def actions(self, state: BimaruState):
@@ -585,9 +589,11 @@ if __name__ == "__main__":
     #checks if there are any boats ( of more than 1 piece ) already on the board
     initial_state = BimaruState(board)
     #print(initial_state.board.size)
-    #print(to_solve.goal_test(initial_state))
+    #initial_state.board.print()
+    #print(to_solve.get_actions_hints(initial_state, "M", 4, 8, []))
+    #print(to_solve.actions(initial_state))
     #finds the right node using dfs search
     solution = depth_first_tree_search(to_solve)
-    #solution.state.board.print()
-    print(solution)
+    solution.state.board.print()
+    #print(solution)
     pass
