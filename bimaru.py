@@ -272,7 +272,7 @@ class Bimaru(Problem):
                                 T = ((i-k, j), (i+k-1, j), k+1)
                                 action.append(T)      
         return action'''
-        
+
     def check_actions_empty(self, state: BimaruState, row: int, col: int):
         if state.board.adjacent_positions_empty(row, col) != 0:
             return False
@@ -423,12 +423,8 @@ class Bimaru(Problem):
                         continue
                     '''state.board.size[1] == 0 and state.board.size[2] == 0 and state.board.size[3] == 0 and'''
                     if size1 != 0:
-                        if state.board.size[1] == 0 and state.board.size[2] == 0 and state.board.size[3] == 0:
-                            T = ((i, j), (i, j), 1)
-                            action.append(T)
-                        if state.board.size[1] == 0 or state.board.size[2] == 0 or state.board.size[3] == 0:
-                            T = ((i, j), (i, j), 1)
-                            action.append(T)
+                        T = ((i, j), (i, j), 1)
+                        action.append(T)
                     size = min(4, row)
                     for k in range(1, size):
                         if j + k > 9:
