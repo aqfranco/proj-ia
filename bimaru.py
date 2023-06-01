@@ -328,7 +328,7 @@ class Bimaru(Problem):
     def get_actions_hints(self, state, piece, row: int, col: int, action):
         i = row
         j = col
-        if (piece == 'M' and ((j > 0 and j < 9) or i == 0 or i == 9))  or piece == 'T' or piece == 'B':
+        if (piece == 'M' and ((i > 0 and i < 9) or j == 0 or j == 9))  or piece == 'T' or piece == 'B':
             size = min(4, state.board.column[j] + 1)
             for k in range(1, size):
                 if state.board.size[k] != 0:
@@ -366,7 +366,7 @@ class Bimaru(Problem):
                                 if state.board.board[i-k+1][j] == '':
                                     T = ((i-k+1, j), (i+k-2, j), k+1)
                                     action.append(T)      
-        if (piece == 'M' and ((i > 0 and i < 9) or j == 0 or j == 9))  or piece == 'R' or piece == 'L':
+        if (piece == 'M' and ((j > 0 and j < 9) or i == 0 or i == 9))  or piece == 'R' or piece == 'L':
             size = min(4, state.board.row[i] + 1)
             for k in range(1, size):
                 if state.board.size[k] != 0:
@@ -422,7 +422,7 @@ class Bimaru(Problem):
                     if not self.check_actions_empty(state, i, j):
                         continue
                     '''state.board.size[1] == 0 and state.board.size[2] == 0 and state.board.size[3] == 0 and'''
-                    if size1 != 0:
+                    if state.board.size[1] == 0 and state.board.size[2] == 0 and state.board.size[3] == 0 and size1 != 0:
                         T = ((i, j), (i, j), 1)
                         action.append(T)
                     size = min(4, row)
