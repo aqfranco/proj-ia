@@ -411,12 +411,8 @@ class Bimaru(Problem):
         size1 = state.board.size[0]
         for i in range(10):
             row = state.board.row[i]
-            if row == 0:
-                continue
             for j in range(10):
                 piece = state.board.board[i][j].upper()
-                if state.board.column[j] == 0:
-                    continue
                 if piece == '.' or piece == 'W':
                     continue
                 if piece != '':
@@ -590,7 +586,7 @@ if __name__ == "__main__":
     initial_state = BimaruState(board)
     #print(initial_state.board.size)
     #initial_state.board.print()
-    #print(to_solve.get_actions_hints(initial_state, "M", 5, 1, []))
+    #print(to_solve.get_actions_hints(initial_state, "T", 2, 7, []))
     #print(to_solve.actions(initial_state))
     #finds the right node using dfs search
     solution = depth_first_tree_search(to_solve)
