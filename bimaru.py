@@ -272,7 +272,7 @@ class Bimaru(Problem):
                                 T = ((i-k, j), (i+k-1, j), k+1)
                                 action.append(T)      
         return action'''
-    '''
+        
     def check_actions_empty(self, state: BimaruState, row: int, col: int):
         if state.board.adjacent_positions_empty(row, col) != 0:
             return False
@@ -280,7 +280,7 @@ class Bimaru(Problem):
         or (col > 1 and state.board.board[row][col-2] == 'L') or (col < 8 and state.board.board[row][col+2] == 'R')):
             return False
         return True
-    '''
+
     '''def actions_aux(self, state:BimaruState, boat_size):
         action = list()
         for i in range(10):
