@@ -47,23 +47,23 @@ class Board:
     def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
         # Get adjacent values vertically above and below the current position
         if row == 1:
-            t = ('null', self.board[row][col-1])
+            t = ('null', self.board[row][col-1].upper())
             return t
         if row == 10:
-            t = (self.board[row-2][col-1], 'null')
+            t = (self.board[row-2][col-1].upper(), 'null')
             return t
-        t = (self.board[row-2][col-1], self.board[row][col-1])
+        t = (self.board[row-2][col-1].upper(), self.board[row][col-1].upper())
         return t
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         # Get adjacent values horizontally left and right of the current position
         if col == 1:
-            t = ('null', self.board[row-1][col])
+            t = ('null', self.board[row-1][col].upper())
             return t
         if col == 10:
-            t = (self.board[row-1][col-2], 'null')
+            t = (self.board[row-1][col-2].upper(), 'null')
             return t
-        t = (self.board[row-1][col-2], self.board[row-1][col])
+        t = (self.board[row-1][col-2].upper(), self.board[row-1][col].upper())
         return t
 
     @staticmethod
@@ -187,7 +187,7 @@ class Board:
                     print('*', end = '')'''
                 else:
                     print(self.board[i][j], end = '')
-            print('\n')
+            print()
     # TODO: outros metodos da classe
 
 class Bimaru(Problem):
@@ -326,17 +326,28 @@ class Bimaru(Problem):
             for k in range(1, size):
                 if state.board.size[k] != 0:
                     if piece == 'T':
-                        if state.board.board[i+k][j] == '':
-                            T = ((i, j), (i+k, j), k+1)
-                            action.append(T)
-                    if piece == 'B':
-                        if state.board.board[i-k][j] == '':
-                            T = ((i-k, j), (i, j), k+1)
-                            action.append(T)
-                if piece == 'M':    
-                    if k == 1 and state.board.board[i][j+k] == '' and state.board.board[i][j-k] == '' and state.board.size[k+1] != 0:
-                        T = ((i, j-k), (i, j+k), k+2)
+                        if i + k > 9:
+                            break
+                        if state.board.board[i+k][j] != '':
+                            break
+                        T = ((i, j), (i+k, j), k+1)
                         action.append(T)
+                    if piece == 'B':
+                        if i - k < 0:
+                            break
+                        if state.board.board[i-k][j] != '':
+                            break
+                        T = ((i-k, j), (i, j), k+1)
+                        action.append(T)
+                if piece == 'M':    
+                    if k == 1:
+                        if j + k > 9 or j - k < 0:
+                            break
+                        if not(state.board.board[i][j+k] == '' and state.board.board[i][j-k] == ''):
+                            break
+                        if state.board.size[k+1] != 0:
+                            T = ((i, j-k), (i, j+k), k+2)
+                            action.append(T)
                         k += 1
                     if k > 2:
                         if state.board.size[k] != 0:
@@ -351,17 +362,29 @@ class Bimaru(Problem):
             for k in range(1, size):
                 if state.board.size[k] != 0:
                     if piece == 'R':
-                        if state.board.board[i][j-k] == '':
-                            T = ((i, j-k), (i, j), k+1)
-                            action.append(T)
-                    if piece == 'L':
-                        if state.board.board[i][j+k] == '':
-                            T = ((i, j), (i, j+k), k+1)
-                            action.append(T)
-                if piece == 'M':
-                    if k == 1 and state.board.board[i+k][j] == '' and state.board.board[i-k][j] == '' and state.board.size[k+1] != 0:
-                        T = ((i-k, j), (i+k, j), k+2)
+                        if j - k < 0: 
+                            break
+                        if state.board.board[i][j-k] != '':
+                            break
+                        T = ((i, j-k), (i, j), k+1)
                         action.append(T)
+                    if piece == 'L':
+                        if j + k > 9:
+                            break
+                        if state.board.board[i][j+k] != '':
+                            break
+                        T = ((i, j), (i, j+k), k+1)
+                        action.append(T)
+                if piece == 'M':
+                    if k == 1:
+                        if i + k > 9 or i - k < 0:
+                            break
+                        if not(state.board.board[i+k][j] == '' and state.board.board[i-k][j] == ''):
+                            break
+                        if state.board.size[k+1] != 0:
+                            T = ((i-k, j), (i+k, j), k+2)
+                            action.append(T)
+                        k += 1
                     if k > 2:
                         if state.board.size[k] != 0:
                             if state.board.board[i+k][j] == '':
@@ -380,7 +403,7 @@ class Bimaru(Problem):
             if row == 0:
                 continue
             for j in range(10):
-                piece = state.board.board[i][j]
+                piece = state.board.board[i][j].upper()
                 if state.board.column[j] == 0:
                     continue
                 if piece == '.' or piece == 'W':
@@ -391,6 +414,7 @@ class Bimaru(Problem):
                 if piece == '':
                     if not self.check_actions_empty(state, i, j):
                         continue
+                    '''state.board.size[1] == 0 and state.board.size[2] == 0 and state.board.size[3] == 0 and'''
                     if size1 != 0: 
                         T = ((i, j), (i, j), 1)
                         action.append(T)
@@ -445,26 +469,26 @@ class Bimaru(Problem):
         posy_f = action[1][1]
         size = action[2]
         if size == 1:
-            self.add_position(new_state, posx_i, posy_i, 'C', size)
+            self.add_position(new_state, posx_i, posy_i, 'c', size)
             new_state.board.size[size-1] -= 1
             return new_state
         if posx_i == posx_f:
             if size >= 3:
-                self.add_position(new_state, posx_i, posy_i + 1, 'M', size)
+                self.add_position(new_state, posx_i, posy_i + 1, 'm', size)
                 if size == 4:
-                    self.add_position(new_state, posx_i, posy_i + 2, 'M', size)
+                    self.add_position(new_state, posx_i, posy_i + 2, 'm', size)
             new_state.board.size[size-1] -= 1
-            self.add_position(new_state, posx_i, posy_i, 'L', size)
-            self.add_position(new_state, posx_f, posy_f, 'R', size)
+            self.add_position(new_state, posx_i, posy_i, 'l', size)
+            self.add_position(new_state, posx_f, posy_f, 'r', size)
             new_state.board.clear_nearby_positions(posx_i, posy_i, size, False)
         if posy_i == posy_f:
             if size >= 3:
-                self.add_position(new_state, posx_i + 1, posy_i, 'M', size)
+                self.add_position(new_state, posx_i + 1, posy_i, 'm', size)
                 if size == 4:
-                    self.add_position(new_state, posx_i + 2, posy_i, 'M', size)
+                    self.add_position(new_state, posx_i + 2, posy_i, 'm', size)
             new_state.board.size[size-1] -= 1
-            self.add_position(new_state, posx_i, posy_i, 'T', size)
-            self.add_position(new_state, posx_f, posy_f, 'B', size)
+            self.add_position(new_state, posx_i, posy_i, 't', size)
+            self.add_position(new_state, posx_f, posy_f, 'b', size)
             new_state.board.clear_nearby_positions(posx_i, posy_i, size, True)
         new_state.board.fill_full_rows()
         return new_state
@@ -502,7 +526,7 @@ class Bimaru(Problem):
     def check_valid_positions(self, state: BimaruState, row: int, col:int) -> bool:
         i = row
         j = col
-        piece = state.board.board[i][j]
+        piece = state.board.board[i][j].upper()
         #checks if around the piece circle the positions are full (of water)
         if piece == 'C':
             if state.board.adjacent_positions_empty(i, j) != 0:
@@ -522,11 +546,11 @@ class Bimaru(Problem):
             if state.board.adjacent_positions_empty(i, j) != 1:
                 return -1
             if piece == 'L':
-                RBorder = state.board.board[i][j+1]
+                RBorder = state.board.board[i][j+1].upper()
                 if RBorder != 'R' and RBorder != 'M':
                     return -1
             if piece == 'R':
-                LBorder = state.board.board[i][j-1]
+                LBorder = state.board.board[i][j-1].upper()
                 if LBorder != 'L' and LBorder != 'M':
                     return -1
                 for n in range(1, 5):
@@ -535,11 +559,11 @@ class Bimaru(Problem):
                     if state.board.board[i][j-n] == '' or state.board.board[i][j-n] == '.' or state.board.board[i][j-n] == 'W':
                         return n
             if piece == 'T':
-                BBorder = state.board.board[i+1][j]
+                BBorder = state.board.board[i+1][j].upper()
                 if BBorder != 'M' and BBorder != 'B':
                     return -1
             if piece == 'B':
-                TBorder = state.board.board[i-1][j] 
+                TBorder = state.board.board[i-1][j].upper() 
                 if TBorder != 'T' and TBorder != 'M':
                     return -1
                 for n in range(1, 5):
