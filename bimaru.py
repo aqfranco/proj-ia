@@ -76,17 +76,20 @@ class Board:
         #create column as the number of pieces on each column missing
         column = stdin.readline().split()
         column = [int(x) for x in column if x.isdigit()]
+        size = [4,3,2,1]
         #create hints by placing each hint on the respective spot of the matrix
         hints = int(stdin.readline())
+        pieces = []
         x = 0
-        y = 0
         while x < hints:
             hint = stdin.readline().split()
             h_row = int(hint[1])
             h_col = int(hint[2])
             board_array[h_row][h_col] = hint[3]
             if(hint[3] == 'C'):
-                y += 1
+                size[0] -= 1
+            if(hint[3] == 'B' or hint[3] == 'R'):
+                pieces.append((hint[3], h_row, h_col))
             if(hint[3] != 'W'):
                 #everytime a piece is added we must remove 1 from the respective row and column values
                 row[h_row] = row[h_row] - 1
@@ -120,14 +123,18 @@ class Board:
                         if board_array[i][j] == '':
                             board_array[i][j] = '.'
             x = x + 1
+        for i in range(len(pieces)):
+            sizes = check_size_pieces(board_array, pieces[i][0], pieces[i][1], pieces[i][2])
+            if sizes > 1:
+                size[sizes - 1] -= 1
         '''
         given the board_array, the row and column we will create  our Board
         the board keeps an array called size that stores the values of the number of boats missing
         we start off by checking if there are any boats of 1 piece already on the board
         '''
-        board = Board(board_array, row, column, [4-y, 3, 2, 1])
+        board = Board(board_array, row, column, size)
         return board
-    
+
     def adjacent_positions_empty(self, row: int, col: int):
         n = 0
         for i in range(row - 1, row + 2, 1):
@@ -138,7 +145,7 @@ class Board:
             for j in range(col - 1, col + 2, 1):
                 if j < 0 or j > 9 or (i == row and j == col):
                     continue
-                if self.board[i][j] != '' and self.board[i][j] != '.' and self.board[i][j] != 'W':   
+                if self.board[i][j] != '' and self.board[i][j] != '.' and self.board[i][j] != 'W':
                     n = n + 1
         return n
 
@@ -265,7 +272,7 @@ class Bimaru(Problem):
                                 T = ((i-k, j), (i+k-1, j), k+1)
                                 action.append(T)      
         return action'''
-    
+    '''
     def check_actions_empty(self, state: BimaruState, row: int, col: int):
         if state.board.adjacent_positions_empty(row, col) != 0:
             return False
@@ -273,7 +280,7 @@ class Bimaru(Problem):
         or (col > 1 and state.board.board[row][col-2] == 'L') or (col < 8 and state.board.board[row][col+2] == 'R')):
             return False
         return True
-    
+    '''
     '''def actions_aux(self, state:BimaruState, boat_size):
         action = list()
         for i in range(10):
@@ -415,9 +422,13 @@ class Bimaru(Problem):
                     if not self.check_actions_empty(state, i, j):
                         continue
                     '''state.board.size[1] == 0 and state.board.size[2] == 0 and state.board.size[3] == 0 and'''
-                    if size1 != 0: 
-                        T = ((i, j), (i, j), 1)
-                        action.append(T)
+                    if size1 != 0:
+                        if state.board.size[1] == 0 and state.board.size[2] == 0 and state.board.size[3] == 0:
+                            T = ((i, j), (i, j), 1)
+                            action.append(T)
+                        if state.board.size[1] == 0 or state.board.size[2] == 0 or state.board.size[3] == 0:
+                            T = ((i, j), (i, j), 1)
+                            action.append(T)
                     size = min(4, row)
                     for k in range(1, size):
                         if j + k > 9:
@@ -492,15 +503,6 @@ class Bimaru(Problem):
             new_state.board.clear_nearby_positions(posx_i, posy_i, size, True)
         new_state.board.fill_full_rows()
         return new_state
-
-    def check_size_pieces(self, state: BimaruState):
-        for i in range(10):
-            for j in range(10):
-                if (state.board.board[i][j] == 'R' or state.board.board[i][j] == 'B'):
-                    size = self.check_valid_positions(state, i, j)
-                    if size == -1:
-                        continue
-                    state.board.size[size - 1] -= 1
     
     def goal_test(self, state: BimaruState):
         #checks if there are more boats to add
@@ -549,31 +551,35 @@ class Bimaru(Problem):
                 RBorder = state.board.board[i][j+1].upper()
                 if RBorder != 'R' and RBorder != 'M':
                     return -1
-            if piece == 'R':
-                LBorder = state.board.board[i][j-1].upper()
-                if LBorder != 'L' and LBorder != 'M':
-                    return -1
-                for n in range(1, 5):
-                    if j - n < 0:
-                        return n
-                    if state.board.board[i][j-n] == '' or state.board.board[i][j-n] == '.' or state.board.board[i][j-n] == 'W':
-                        return n
             if piece == 'T':
                 BBorder = state.board.board[i+1][j].upper()
                 if BBorder != 'M' and BBorder != 'B':
                     return -1
-            if piece == 'B':
-                TBorder = state.board.board[i-1][j].upper() 
-                if TBorder != 'T' and TBorder != 'M':
-                    return -1
-                for n in range(1, 5):
-                    if i - n < 0:
-                        return n
-                    if state.board.board[i-n][j] == '' or state.board.board[i-n][j] == '.' or state.board.board[i-n][j] == 'W':
-                        return n
+            if piece == 'R' or piece == 'B':
+                return check_size_pieces(state.board.board, piece, i, j)
         return 0
     # TODO: outros metodos da classe
 
+def check_size_pieces(board_array, piece, i, j):
+    if piece == 'R':
+        LBorder = board_array[i][j-1].upper()
+        if LBorder != 'L' and LBorder != 'M':
+            return -1
+        for n in range(1, 5):
+            if j - n < 0:
+                return n
+            if board_array[i][j-n] == '' or board_array[i][j-n] == '.' or board_array[i][j-n] == 'W':
+                return n
+    if piece == 'B':
+        TBorder = board_array[i-1][j].upper() 
+        if TBorder != 'T' and TBorder != 'M':
+            return -1
+        for n in range(1, 5):
+            if i - n < 0:
+                return n
+            if board_array[i-n][j] == '' or board_array[i-n][j] == '.' or board_array[i-n][j] == 'W':
+                return n
+    return 0
 
 if __name__ == "__main__":
     board = Board.parse_instance()
@@ -582,10 +588,10 @@ if __name__ == "__main__":
     to_solve = Bimaru(board)
     #checks if there are any boats ( of more than 1 piece ) already on the board
     initial_state = BimaruState(board)
-    to_solve.check_size_pieces(initial_state)
-    #print(to_solve.actions(initial_state))
+    #print(initial_state.board.size)
+    #print(to_solve.goal_test(initial_state))
     #finds the right node using dfs search
     solution = depth_first_tree_search(to_solve)
-    solution.state.board.print()
-    #print(solution)
+    #solution.state.board.print()
+    print(solution)
     pass
