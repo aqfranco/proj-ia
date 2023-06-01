@@ -329,7 +329,7 @@ class Bimaru(Problem):
         i = row
         j = col
         if (piece == 'M' and ((j > 0 and j < 9) or i == 0 or i == 9))  or piece == 'T' or piece == 'B':
-            size = min(4, state.board.column[i] + 1)
+            size = min(4, state.board.column[j] + 1)
             for k in range(1, size):
                 if state.board.size[k] != 0:
                     if piece == 'T':
@@ -346,7 +346,7 @@ class Bimaru(Problem):
                             break
                         T = ((i-k, j), (i, j), k+1)
                         action.append(T)
-                if piece == 'M':    
+                if piece == 'M':
                     if k == 1:
                         if i + k > 9 or i - k < 0:
                             break
@@ -590,7 +590,7 @@ if __name__ == "__main__":
     initial_state = BimaruState(board)
     #print(initial_state.board.size)
     #initial_state.board.print()
-    #print(to_solve.get_actions_hints(initial_state, "M", 4, 8, []))
+    #print(to_solve.get_actions_hints(initial_state, "M", 5, 1, []))
     #print(to_solve.actions(initial_state))
     #finds the right node using dfs search
     solution = depth_first_tree_search(to_solve)
