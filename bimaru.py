@@ -407,7 +407,9 @@ class Bimaru(Problem):
         return action
 
     def actions(self, state: BimaruState):
+        #if there are no more pieces to put in a row or column we will fill those with water
         action = list()
+        hint_action = list()
         size1 = state.board.size[0]
         for i in range(10):
             row = state.board.row[i]
@@ -417,7 +419,7 @@ class Bimaru(Problem):
                     continue
                 if piece != '':
                     if self.check_valid_positions(state, i, j) == -1:
-                        action = self.get_actions_hints(state, piece, i, j, action)
+                        hint_action = self.get_actions_hints(state, piece, i, j, hint_action)
                 if piece == '':
                     if not self.check_actions_empty(state, i, j):
                         continue
@@ -445,6 +447,9 @@ class Bimaru(Problem):
                             break
                         T = ((i, j), (i+k, j), k+1)
                         action.append(T)
+        x = len(hint_action)
+        for i in range(x):
+            action.append(hint_action[i])
         return action
         '''"""Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
