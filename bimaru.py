@@ -407,7 +407,6 @@ class Bimaru(Problem):
         return action
 
     def actions(self, state: BimaruState):
-        #if there are no more pieces to put in a row or column we will fill those with water
         action = list()
         hint_action = list()
         size1 = state.board.size[0]
